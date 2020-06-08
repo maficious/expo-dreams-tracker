@@ -1,15 +1,23 @@
 import { View } from "native-base";
-import React, { useState } from "react";
+import React, { useState, forwardRef, useImperativeHandle } from "react";
 import { Alert, AsyncStorage } from "react-native";
-import { localizations } from "../assets/i18n/localizations";
+import { localizations } from "../../assets/i18n/localizations";
 import { Colors } from "../variables/colors";
 import { Chip } from "./Chip";
 import { DreamItem } from "./DreamItem";
 
-export default function DreamList() {
+export default DreamList = forwardRef((props, ref) => {
     const [dreams, setDreams] = useState([]);
     const [initialDreams, setInitialDreams] = useState([]);
     const [searchKeywords, setSearchKeywords] = useState([]);
+    
+    useImperativeHandle(
+        ref,
+        () => ({
+            _loadDreams() { loadDreams() },
+            _dreams_filter_by_any(text) { dreams_filter_by_any(text) },
+            _dreams_filter_by_date(dateText) { dreams_filter_by_date(dateText) }
+        }));
 
     // Utility functions
 
@@ -188,4 +196,4 @@ export default function DreamList() {
             <View>{renderAlbums()}</View>
         </View>
     );
-}
+});
