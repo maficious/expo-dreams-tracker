@@ -1,7 +1,7 @@
 import { Body, Button, Card, CardItem, Icon, Left, Right, View } from "native-base";
 import React from "react";
 import { Text, TouchableOpacity } from "react-native";
-import { localizations } from "../assets/i18n/localizations";
+import { localizations } from "../../assets/i18n/localizations";
 import { Colors } from "../variables/colors";
 import { Chip } from "./Chip";
 

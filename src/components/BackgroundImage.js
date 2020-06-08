@@ -2,7 +2,7 @@ import React from "react";
 import { ImageBackground, StyleSheet, View } from "react-native";
 import { Colors } from "../variables/colors";
 
-export default function BackgroundImage() {
+export default function BackgroundImage(props) {
     return (
         <View style={styles.containerStyle}>
             <ImageBackground
