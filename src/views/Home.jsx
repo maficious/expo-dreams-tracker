@@ -52,7 +52,7 @@ export default function Home({ navigation }) {
 
 		// add headers
 		csvContent += "Название,Описание,Создано,Сон с,Сон до,Ключевые слова\n";
-		// add dreams
+		// add content
 		csvContent += initialDreams
 			.map(d =>
 				[
