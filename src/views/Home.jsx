@@ -5,6 +5,9 @@ import { AsyncStorage, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, V
 import localizations from "../../assets/i18n/localizations";
 import HeaderButtons from "../components/HeaderButtons";
 import Chip from "../components/Chip";
+import * as FileSystem from "expo-file-system";
+import * as MailComposer from "expo-mail-composer";
+
 moment.locale("ru");
 
 export default function Home({ navigation }) {
@@ -19,7 +22,7 @@ export default function Home({ navigation }) {
 					<HeaderButtons
 						buttons={[
 							{
-								icon: "md-share",
+								icon: "md-download",
 								iconSize: 24,
 								onPress: dreams_export
 							},
@@ -35,8 +38,51 @@ export default function Home({ navigation }) {
 		});
 	}, [navigation, dreams_export]);
 
-	// Export dreams in CSV or JSON format
-	function dreams_export() {
+	// Export dreams in CSV format
+	async function dreams_export() {
+		if (!(initialDreams.length > 0)) {
+			alert("Nothing to export!");
+			return;
+		};
+
+		let csvContent = "";
+
+		// add headers
+		csvContent += "Название,Описание,Создано,Сон с,Сон до,Ключевые слова\n";
+		// add dreams
+		csvContent += initialDreams
+			.map(d =>
+				[
+					d.title,
+					d.description,
+					moment(d.timestamp).format("Do MMM YYYY - HH:mm"),
+					moment(d.fromDate).format("Do MMM YYYY - HH:mm"),
+					moment(d.toDate).format("Do MMM YYYY - HH:mm"),
+					d.tags.join("; ")
+				].join(",")
+			)
+			.join("\n");
+
+		try {
+			const file = FileSystem.readAsStringAsync(FileSystem.cacheDirectory + "dreams.csv");
+			if (file) {
+				FileSystem.deleteAsync(FileSystem.cacheDirectory + "dreams.csv");
+			}
+		} catch (error) {
+			console.log("Didn't find the file...");
+		}
+
+		FileSystem.writeAsStringAsync(FileSystem.cacheDirectory + "dreams.csv", csvContent);
+		MailComposer.composeAsync({
+			recipients: [],
+			ccRecipients: [],
+			bccRecipients: [],
+			subject: "Сновидения",
+			body: "",
+			isHtml: false,
+			attachments: [FileSystem.cacheDirectory + "dreams.csv"]
+		});
+
 		alert("Exported");
 	}
 
@@ -60,15 +106,6 @@ export default function Home({ navigation }) {
 		});
 	}
 
-	async function saveDreams(dreams_array) {
-		AsyncStorage.setItem("DREAMS", JSON.stringify(dreams_array), (error, result) => {
-			console.log("Saving dreams from Create Dream screen");
-			if (error) {
-				console.log("\t| ERR:", error);
-			}
-		});
-	}
-
 	// Create an array of dream entry elements;
 	// Later used to fill the list;
 	function generate_dreams_list(dreams) {
@@ -81,9 +118,9 @@ export default function Home({ navigation }) {
 						key={"dream_" + dream.id}
 						emoji={dream.emoji}
 						tags={dream.tags}
-						title={dream.title.length > 30 ? dream.title.slice(0, 27) + "..." : dream.title}
+						title={dream.title}
 						description={dream.description}
-						timestamp={moment(dream.timestamp).format("Do MMMM YYYY, HH:mm")}
+						timestamp={moment(new Date().getTime()).to(dream.timestamp)}
 						onPress={() => openDreamDetails(dream.id)}
 					/>
 				);
@@ -141,12 +178,8 @@ function DreamEntry(props) {
 		props.onPress();
 	}
 
-	if (props.tags === undefined || props.tags === null) {
-		var tags = ["tag", "long", "verylong", "verylongtag", "practical", "amazing", "song", "dig"];
-	}
-
 	const createChips = () => {
-		let components = tags.map(tag => <Chip text={tag} />);
+		let components = props.tags ? props.tags.map(tag => <Chip key={"tag_" + tag} text={tag} />) : [];
 		return components;
 	};
 
@@ -164,9 +197,7 @@ function DreamEntry(props) {
 						</Text>
 					</View>
 				</View>
-				<View style={{ flex: 1, flexDirection: "row", flexWrap: "wrap" }}>
-					{createChips()}
-				</View>
+				<View style={{ flex: 1, flexDirection: "row", flexWrap: "wrap" }}>{createChips()}</View>
 				<Text style={DIStyles.description}>{props.description}</Text>
 			</View>
 		</TouchableWithoutFeedback>

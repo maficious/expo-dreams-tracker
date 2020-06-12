@@ -4,6 +4,7 @@ import moment from "moment";
 import React, { useEffect, useState } from "react";
 import { AsyncStorage, Button, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import EmojiSelector, { Categories } from "react-native-emoji-selector";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import localizations from "../../assets/i18n/localizations";
 
 // Main component
@@ -21,6 +22,9 @@ export default function EditDream({ route, navigation }) {
 	const [emoji, setEmoji] = useState(dream.emoji);
 	const [toDate, setToDate] = useState(dream.toDate);
 	const [fromDate, setFromDate] = useState(dream.fromDate);
+	const [tags, setTags] = useState(dream.tags);
+	const joinedTags = () => tags.join(', ');
+	const [tagsInput, setTagsInput] = useState(joinedTags());
 	////////// Date picker
 	const [isToDatePickerVisible, setIsToDatePickerVisible] = useState(false);
 	const [isFromDatePickerVisible, setIsFromDatePickerVisible] = useState(false);
@@ -51,20 +55,6 @@ export default function EditDream({ route, navigation }) {
 		navigation.popToTop();
 	}
 
-	// async function saveDreams(dream_object) {
-	// 	// Spread existing dreams and add our new dream
-	// 	AsyncStorage.setItem("DREAMS", JSON.stringify([...dreams, dream_object]), (error, result) => {
-	// 		console.log("Saving dreams from Create Dream screen");
-	// 		if (error) {
-	// 			console.log("\t| ERR:", error);
-	// 		}
-	// 	});
-
-	// 	// Go back
-	// 	route.params.onGoBack();
-	// 	navigation.goBack();
-	// }
-
 	function showDatePicker(which) {
 		Keyboard.dismiss();
 		switch (which) {
@@ -80,10 +70,22 @@ export default function EditDream({ route, navigation }) {
 		}
 	}
 
+	async function generateTagsOnChange(text) {
+		setTagsInput(text);
+		setTags(
+			text
+				? text
+						.split(",")
+						.map(text => text.trim())
+						.filter(Boolean)
+				: []
+		);
+	}
+
 	// FUNCTIONS END
 
 	return (
-		<View
+		<KeyboardAwareScrollView
 			onLayout={event => {
 				setChoserDimensions({
 					width: event.nativeEvent.layout.width,
@@ -103,7 +105,6 @@ export default function EditDream({ route, navigation }) {
 					onPress={() => setIsEmojiChoserOpened(false)}
 				/>
 			)}
-
 			{/* ToDate picker */}
 			{isToDatePickerVisible && (
 				<DateTimePicker
@@ -119,11 +120,9 @@ export default function EditDream({ route, navigation }) {
 					}}
 				/>
 			)}
-
 			{/* FromDate picker */}
 			{isFromDatePickerVisible && (
 				<DateTimePicker
-					// testID="toDateTimePicker"
 					value={fromDate}
 					mode={dateTimePickerMode}
 					maximumDate={toDate}
@@ -136,7 +135,7 @@ export default function EditDream({ route, navigation }) {
 				/>
 			)}
 
-			<View style={{ flexDirection: "row" }}>
+			<View style={{ flexDirection: "row", margin: 10 }}>
 				{/* Emoji button */}
 				<TouchableOpacity
 					style={{
@@ -174,14 +173,29 @@ export default function EditDream({ route, navigation }) {
 					{title}
 				</TextInput>
 			</View>
-
+			{/* Tags */}
+			<View
+				style={{
+					flex: 1,
+					marginHorizontal: 10,
+					borderRadius: 10,
+					padding: 10,
+					justifyContent: "center",
+					alignContent: "center",
+					backgroundColor: "#eee"
+				}}>
+				<TextInput
+					placeholder="Тэги"
+					onChangeText={text => generateTagsOnChange(text)}
+					value={tagsInput}></TextInput>
+			</View>
 			{/* Description textfield */}
 			<TextInput
 				multiline
 				numberOfLines={6}
 				maxLength={200}
 				style={{
-					marginVertical: 10,
+					margin: 10,
 					borderRadius: 10,
 					padding: 10,
 					textAlign: "justify",
@@ -195,7 +209,7 @@ export default function EditDream({ route, navigation }) {
 
 			{/* FromDate selector */}
 			<View>
-				<View style={{ flexDirection: "row" }}>
+				<View style={{ flexDirection: "row", marginHorizontal: 10 }}>
 					<TouchableOpacity
 						style={{
 							borderRadius: 10,
@@ -234,7 +248,7 @@ export default function EditDream({ route, navigation }) {
 					</TouchableOpacity>
 				</View>
 				{/* ToDate selector */}
-				<View style={{ flexDirection: "row", marginVertical: 10 }}>
+				<View style={{ flexDirection: "row", margin: 10 }}>
 					<TouchableOpacity
 						style={{
 							borderRadius: 10,
@@ -284,7 +298,8 @@ export default function EditDream({ route, navigation }) {
 						description: description,
 						fromDate: fromDate,
 						toDate: toDate,
-						timestamp: timestamp
+						timestamp: timestamp,
+						tags: tags
 					})
 				}
 				title={localizations.DreamSaveButtonText}
@@ -292,7 +307,7 @@ export default function EditDream({ route, navigation }) {
 				// disable the button if title or description is empty
 				disabled={title === "" ? true : description === "" ? true : false}
 			/>
-		</View>
+		</KeyboardAwareScrollView>
 	);
 }
 
@@ -303,10 +318,9 @@ function Emojis(props) {
 		<View
 			style={{
 				position: "absolute",
-				height: props._dimensions.height - 40,
-				width: props._dimensions.width - 30,
-				// offset by half the height of emoji choser substracted from View's height
-				top: (props._dimensions.height - (props._dimensions.height - 40)) / 2,
+				height: props._dimensions.height - 150,
+				width: props._dimensions.width - 20,
+				top: 10,
 				alignSelf: "center",
 				elevation: 10,
 				backgroundColor: "white",

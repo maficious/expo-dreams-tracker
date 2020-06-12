@@ -3,6 +3,7 @@ import { ScrollView, View, Text, StyleSheet, AsyncStorage } from "react-native";
 import HeaderButtons from "../components/HeaderButtons";
 import localizations from "../../assets/i18n/localizations";
 import moment from "moment";
+import Chip from "../components/Chip";
 
 export default function DreamDetails({ route, navigation }) {
 	const current_opened_dream_id = route.params.dreamId;
@@ -32,6 +33,11 @@ export default function DreamDetails({ route, navigation }) {
 		route.params.onGoBack();
 		navigation.goBack();
 	}
+
+	const createChips = () => {
+		let components = dream.tags ? dream.tags.map(tag => <Chip key={"tag_" + tag} text={tag} />) : [];
+		return components;
+	};
 
 	useLayoutEffect(() => {
 		navigation.setOptions({
@@ -65,6 +71,9 @@ export default function DreamDetails({ route, navigation }) {
 		<ScrollView style={styles.container}>
 			<Text style={styles.emoji}>{dream.emoji}</Text>
 			<Text style={styles.dreamTitle}>{dream.title}</Text>
+			<View style={{ flex: 1, flexDirection: "row", flexWrap: "wrap" }}>
+				{createChips()}
+			</View>
 			<Text>
 				{localizations.TimestampPrefixText} {moment(dream.timestamp).format("Do MMMM YYYY, HH:mm")}
 			</Text>

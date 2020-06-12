@@ -4,12 +4,17 @@ import moment from "moment";
 import React, { useEffect, useState } from "react";
 import { AsyncStorage, Button, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import EmojiSelector, { Categories } from "react-native-emoji-selector";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import localizations from "../../assets/i18n/localizations";
 
 // Main component
 
 export default function CreateDream({ route, navigation }) {
 	const dreams = route.params.dreams;
+	// Assuming that all dreams in initialDreams array are sorted by order added
+	// take the latest in the array and have the next id after that.
+	// If something gets deleted somewhere in the array, it won't affect
+	// next IDs. Same goes for edge items in array. 
 	const new_dream_id = dreams.length > 0 ? dreams[0].id + 1 : 0;
 	//
 	// States:
@@ -18,9 +23,11 @@ export default function CreateDream({ route, navigation }) {
 	const [title, setTitle] = useState("");
 	const [description, setDescription] = useState("");
 	const [emoji, setEmoji] = useState("🌙");
-	const timestamp = new Date().getTime();
+	const timestamp =  new Date().getTime();
 	const [toDate, setToDate] = useState(new Date().getTime());
 	const [fromDate, setFromDate] = useState(new Date().getTime());
+	const [tags, setTags] = useState([]);
+	const [tagsInput, setTagsInput] = useState("");
 	////////// Date picker
 	const [isToDatePickerVisible, setIsToDatePickerVisible] = useState(false);
 	const [isFromDatePickerVisible, setIsFromDatePickerVisible] = useState(false);
@@ -62,10 +69,22 @@ export default function CreateDream({ route, navigation }) {
 		}
 	}
 
+	async function generateTagsOnChange(text) {
+		setTagsInput(text);
+		setTags(
+			text
+				? text
+						.split(",")
+						.map(text => text.trim())
+						.filter(Boolean)
+				: []
+		);
+	}
+
 	// FUNCTIONS END
 
 	return (
-		<View
+		<KeyboardAwareScrollView
 			onLayout={event => {
 				setChoserDimensions({
 					width: event.nativeEvent.layout.width,
@@ -85,7 +104,6 @@ export default function CreateDream({ route, navigation }) {
 					onPress={() => setIsEmojiChoserOpened(false)}
 				/>
 			)}
-
 			{/* ToDate picker */}
 			{isToDatePickerVisible && (
 				<DateTimePicker
@@ -101,11 +119,9 @@ export default function CreateDream({ route, navigation }) {
 					}}
 				/>
 			)}
-
 			{/* FromDate picker */}
 			{isFromDatePickerVisible && (
 				<DateTimePicker
-					// testID="toDateTimePicker"
 					value={fromDate}
 					mode={dateTimePickerMode}
 					maximumDate={toDate}
@@ -117,8 +133,7 @@ export default function CreateDream({ route, navigation }) {
 					}}
 				/>
 			)}
-
-			<View style={{ flexDirection: "row" }}>
+			<View style={{ flexDirection: "row", margin: 10 }}>
 				{/* Emoji button */}
 				<TouchableOpacity
 					style={{
@@ -146,7 +161,6 @@ export default function CreateDream({ route, navigation }) {
 							marginLeft: 10,
 							padding: 5,
 							borderRadius: 10,
-							textAlign: "center",
 							textAlignVertical: "center",
 							backgroundColor: "#eee"
 						}
@@ -156,14 +170,29 @@ export default function CreateDream({ route, navigation }) {
 					{title}
 				</TextInput>
 			</View>
-
+			{/* Tags */}
+			<View
+				style={{
+					flex: 1,
+					marginHorizontal: 10,
+					borderRadius: 10,
+					padding: 10,
+					justifyContent: "center",
+					alignContent: "center",
+					backgroundColor: "#eee"
+				}}>
+				<TextInput
+					placeholder="Тэги"
+					onChangeText={text => generateTagsOnChange(text)}
+					value={tagsInput}></TextInput>
+			</View>
 			{/* Description textfield */}
 			<TextInput
 				multiline
 				numberOfLines={6}
 				maxLength={200}
 				style={{
-					marginVertical: 10,
+					margin: 10,
 					borderRadius: 10,
 					padding: 10,
 					textAlign: "justify",
@@ -177,7 +206,7 @@ export default function CreateDream({ route, navigation }) {
 
 			{/* FromDate selector */}
 			<View>
-				<View style={{ flexDirection: "row" }}>
+				<View style={{ flexDirection: "row", marginHorizontal: 10 }}>
 					<TouchableOpacity
 						style={{
 							borderRadius: 10,
@@ -216,7 +245,7 @@ export default function CreateDream({ route, navigation }) {
 					</TouchableOpacity>
 				</View>
 				{/* ToDate selector */}
-				<View style={{ flexDirection: "row", marginVertical: 10 }}>
+				<View style={{ flexDirection: "row", margin: 10 }}>
 					<TouchableOpacity
 						style={{
 							borderRadius: 10,
@@ -255,7 +284,6 @@ export default function CreateDream({ route, navigation }) {
 					</TouchableOpacity>
 				</View>
 			</View>
-
 			{/* Save button */}
 			<Button
 				onPress={() =>
@@ -266,7 +294,8 @@ export default function CreateDream({ route, navigation }) {
 						description: description,
 						fromDate: fromDate,
 						toDate: toDate,
-						timestamp: timestamp
+						timestamp: timestamp,
+						tags: tags
 					})
 				}
 				title={localizations.DreamSaveButtonText}
@@ -274,7 +303,7 @@ export default function CreateDream({ route, navigation }) {
 				// disable the button if title or description is empty
 				disabled={title === "" ? true : description === "" ? true : false}
 			/>
-		</View>
+		</KeyboardAwareScrollView>
 	);
 }
 
@@ -285,10 +314,9 @@ function Emojis(props) {
 		<View
 			style={{
 				position: "absolute",
-				height: props._dimensions.height - 40,
-				width: props._dimensions.width - 30,
-				// offset by half the height of emoji choser substracted from View's height
-				top: (props._dimensions.height - (props._dimensions.height - 40)) / 2,
+				height: props._dimensions.height - 150,
+				width: props._dimensions.width - 20,
+				top: 10,
 				alignSelf: "center",
 				elevation: 10,
 				backgroundColor: "white",
@@ -327,12 +355,11 @@ function Emojis(props) {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#fff",
-		padding: 20
+		backgroundColor: "#fff"
 	},
 	dreamTitle: {
-		fontSize: 26
-		// textAlign: "center",
+		fontSize: 26,
+		textAlign: "center"
 	},
 	emoji: {
 		fontSize: 48,
