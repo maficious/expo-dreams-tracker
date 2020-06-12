@@ -4,12 +4,15 @@
 		"slug": "dreams-tracker",
 		"platforms": ["ios", "android"],
 		"android": {
-			"backgroundColor": "#fff"
+			"backgroundColor": "#fff",
+			"package": "maficious.github.io",
+			"versionCode": 1
 		},
 		"ios": {
 			"supportsTablet": false,
 			"backgroundColor": "#fff",
-			"bundleIdentifier": "maficious.github.io"
+			"bundleIdentifier": "maficious.github.io",
+			"buildNumber": "0.0.1"
 		},
 		"version": "0.0.1",
 		"orientation": "portrait",
