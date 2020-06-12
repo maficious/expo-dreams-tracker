@@ -33,7 +33,7 @@ export default function App() {
 	}
 
 	useEffect(() => {
-		// get_is_first_run();
+		get_is_first_run();
 	}, []);
 
 	return (
