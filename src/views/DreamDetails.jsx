@@ -51,11 +51,6 @@ export default function DreamDetails({ route, navigation }) {
 								onPress: () => deleteThisDream()
 							},
 							{
-								icon: "md-share",
-								iconSize: 24,
-								onPress: () => alert("Shared")
-							},
-							{
 								icon: "ios-create",
 								iconSize: 24,
 								onPress: () => openDreamEditorForCurrentDream(current_opened_dream_id)
