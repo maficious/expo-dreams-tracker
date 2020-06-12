@@ -63,6 +63,7 @@ export default function Home({ navigation }) {
 			)
 			.join("\n");
 
+			// I don't know if this works, but keep it there for safety...
 		try {
 			const file = FileSystem.readAsStringAsync(FileSystem.cacheDirectory + "dreams.csv");
 			if (file) {
