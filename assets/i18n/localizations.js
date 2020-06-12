@@ -1,5 +1,5 @@
 export default localizations = {
-	DreamsListHeaderTitle       : "Ваши сновидения",
+	DreamsListHeaderTitle       : "Ваши сны",
 	TimestampPrefixText         : "Добавлено",
 	DreamDetailsHeaderTitle     : "Детали сна",
 	IntroNextButtonText         : "Дальше",
