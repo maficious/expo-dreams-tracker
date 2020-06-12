@@ -1,12 +1,13 @@
 import moment from "moment";
 import "moment/locale/ru";
 import React, { useEffect, useLayoutEffect, useState } from "react";
-import { AsyncStorage, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
+import { AsyncStorage, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View, TextInput } from "react-native";
 import localizations from "../../assets/i18n/localizations";
 import HeaderButtons from "../components/HeaderButtons";
 import Chip from "../components/Chip";
 import * as FileSystem from "expo-file-system";
 import * as MailComposer from "expo-mail-composer";
+import { Ionicons } from "@expo/vector-icons";
 
 moment.locale("ru"); // change moment's locale to russian
 
@@ -14,6 +15,8 @@ export default function Home({ navigation }) {
 	// shoud be empty by default; loaded from storage;
 	const [initialDreams, setInitialDreams] = useState([]);
 	const [dreams, setDreams] = useState([]);
+	const [searchInputText, setSearchInputText] = useState("");
+	const [searchTags, setSearchTags] = useState([]);
 
 	useLayoutEffect(() => {
 		navigation.setOptions({
@@ -36,14 +39,14 @@ export default function Home({ navigation }) {
 				</View>
 			)
 		});
-	}, [navigation, dreams_export]);
+	}, [navigation, dreams_export, openNewDreamEditor]);
 
 	// Export dreams in CSV format
 	async function dreams_export() {
 		if (!(initialDreams.length > 0)) {
 			alert(localizations.NothingToExportAlertText);
 			return;
-		};
+		}
 
 		let csvContent = "";
 
@@ -63,7 +66,7 @@ export default function Home({ navigation }) {
 			)
 			.join("\n");
 
-			// I don't know if this works, but keep it there for safety...
+		// I don't know if this works, but keep it there for safety...
 		try {
 			const file = FileSystem.readAsStringAsync(FileSystem.cacheDirectory + "dreams.csv");
 			if (file) {
@@ -105,6 +108,51 @@ export default function Home({ navigation }) {
 				setDreams(dreams);
 			}
 		});
+	}
+
+	function performSearch(text) {
+		setSearchInputText(text);
+
+		setSearchTags(
+			text
+				? text
+						.split(",")
+						.map(tagStr => tagStr.trim())
+						.filter(Boolean)
+				: []
+		);
+
+		filterBy_hasAllTags(
+			text
+				? text
+						.split(",")
+						.map(tagStr => tagStr.trim())
+						.filter(Boolean)
+				: []
+		);
+	}
+
+	function filterBy_hasAllTags(tags) {
+		if (tags && tags.length > 0) {
+			const new_dreams_list = initialDreams.filter(dream => {
+				let hasAllTags = true;
+
+				tags.map(tag => {
+					if (dream.tags.indexOf(tag) === -1) hasAllTags = false;
+				});
+
+				return hasAllTags;
+			});
+
+			setDreams(new_dreams_list.sort((dA, dB) => dA.timestamp < dB.timestamp));
+		} else {
+			setDreams(initialDreams.sort((dA, dB) => dA.timestamp < dB.timestamp));
+		}
+	}
+
+	function createSearchTagsChips() {
+		let components = searchTags.map(tag => <Chip key={"tag_" + tag} text={tag} />);
+		return components;
 	}
 
 	// Create an array of dream entry elements;
@@ -152,13 +200,41 @@ export default function Home({ navigation }) {
 
 	const refreshDreams = () => {
 		loadDreams();
+		performSearch("");
 	};
 
 	useEffect(() => {
 		loadDreams();
 	}, []);
 
-	return <ScrollView style={HOMEStyles.scrollContainer}>{generate_dreams_list(dreams)}</ScrollView>;
+	return (
+		<View style={{ flex: 1 }}>
+			<TextInput
+				style={{
+					margin: 7,
+					borderRadius: 10,
+					padding: 10,
+					backgroundColor: "#fff",
+					fontSize: 16
+				}}
+				autoCompleteType="off"
+				autoCorrect={false}
+				placeholder={"Search by tags..."}
+				onChangeText={text => performSearch(text)}
+				value={searchInputText}
+			/>
+			<View
+				style={{
+					flexDirection: "row",
+					flexWrap: "wrap",
+					marginHorizontal: 7,
+					marginBottom: searchTags.length > 0 ? 7 : 0
+				}}>
+				{createSearchTagsChips(searchTags)}
+			</View>
+			<ScrollView style={HOMEStyles.scrollContainer}>{generate_dreams_list(dreams)}</ScrollView>
+		</View>
+	);
 }
 
 // styles related to home screen
