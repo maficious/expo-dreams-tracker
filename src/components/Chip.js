@@ -1,13 +1,18 @@
 import React from "react";
 import { View, TouchableOpacity, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import randomColor from 'randomcolor';
 
 export default function Chip(props) {
 	return (
 		<View
 			style={{
 				flexDirection: "row",
-				backgroundColor: "#eee",
+				backgroundColor: randomColor({
+					hue:"200",
+					format: "hex",
+					luminosity:"bright",
+				}),
 				justifyContent: "center",
 				alignItems: "center",
 				alignSelf: "flex-start",
@@ -28,7 +33,7 @@ export default function Chip(props) {
 					<Ionicons name="ios-close" size={24} color="black" />
 				</TouchableOpacity>
 			)}
-			<Text style={{ marginHorizontal:10, color: "white", textAlignVertical: "center", fontSize: 16, color: "black" }}>
+			<Text style={{ marginHorizontal:10, color: "white", textAlignVertical: "center", fontSize: 16 }}>
 				{props.text}
 			</Text>
 		</View>
