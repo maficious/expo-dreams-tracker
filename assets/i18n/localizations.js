@@ -9,5 +9,6 @@ export default localizations = {
 	DreamDescriptionPlaceholder : "Во сне я упала с высокого здания и почти разбилась...",
 	DreamDateFromText           : "с",
 	DreamDateToText             : "по",
-	DreamSaveButtonText         : "Сохранить"
+	DreamSaveButtonText         : "Сохранить",
+	NothingToExportAlertText	: "У вас нет никаких снов!"
 };

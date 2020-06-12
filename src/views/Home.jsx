@@ -8,7 +8,7 @@ import Chip from "../components/Chip";
 import * as FileSystem from "expo-file-system";
 import * as MailComposer from "expo-mail-composer";
 
-moment.locale("ru");
+moment.locale("ru"); // change moment's locale to russian
 
 export default function Home({ navigation }) {
 	// shoud be empty by default; loaded from storage;
@@ -41,7 +41,7 @@ export default function Home({ navigation }) {
 	// Export dreams in CSV format
 	async function dreams_export() {
 		if (!(initialDreams.length > 0)) {
-			alert("Nothing to export!");
+			alert(localizations.NothingToExportAlertText);
 			return;
 		};
 
